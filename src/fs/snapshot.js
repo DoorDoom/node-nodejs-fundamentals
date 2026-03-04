@@ -25,9 +25,7 @@ const snapshot = async () => {
               path,
               type,
               size: stats.size,
-              content: fs.readFileSync(`${rootPath}/${path}`, {
-                encoding: "utf8",
-              }),
+              content: fs.readFileSync(`${rootPath}/${path}`, "utf8"),
             });
           }
           if (type === "directory") {
