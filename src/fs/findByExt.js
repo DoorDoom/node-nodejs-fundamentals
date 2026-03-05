@@ -7,9 +7,6 @@ const findByExt = async () => {
 
     function getFiles(rootPath, extension) {
       fs.readdirSync(rootPath, { recursive: true })
-        .map((elem) => {
-          return elem;
-        })
         .filter((elem) => {
           const myRe = new RegExp(`.${extension}$`, "g");
           return elem.search(myRe) > -1;
