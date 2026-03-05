@@ -48,7 +48,7 @@ const snapshot = async () => {
       console.log("The directory does NOT exist");
 
       fs.mkdirSync(directoryPath);
-      return;
+      throw new Error("FS operation failed");
     }
 
     // Get data and create JSON
