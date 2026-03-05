@@ -26,6 +26,9 @@ const merge = async () => {
             return elem.search(myRe) > -1;
           })
           .sort();
+
+      if (fileList.length < 1) throw new Error("FS operation failed");
+
       fileList.forEach((elem) => {
         const content = fs.readFileSync(`${rootPath}/${elem}`, "utf8");
         result = result + content;
