@@ -1,18 +1,15 @@
-const dynamic = async () => {
-  const directoryPath = "./plugins";
-  const plugin = process.argv[2];
+import fs from "fs";
+import process from "process";
 
-  try {
-    if (plugin) {
-      await import(`${directoryPath}/${plugin}.js`).then((module) => {
-        console.log(module.run());
-      });
-    } else {
-      throw new Error("Plugin not found");
-    }
-  } catch (error) {
-    console.log(error);
-  }
+const dynamic = async () => {
+  const plugin = process.argv[2];
+  const path = `${process.cwd()}/src/modules/plugins/${plugin}.js`;
+
+  if (fs.existsSync(path))
+    import(`./plugins/${plugin}.js`).then((module) => {
+      console.log(module.run());
+    });
+  else throw new Error("Plugin not found");
 };
 
 await dynamic();
