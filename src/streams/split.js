@@ -28,7 +28,6 @@ const split = async () => {
           writable.write(result);
           cur++;
         }
-        console.log(filesQ);
         callback();
       },
     });
