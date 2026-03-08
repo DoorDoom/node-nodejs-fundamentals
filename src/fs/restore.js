@@ -1,16 +1,18 @@
 import fs from "fs";
+import { checkDirectory } from "../helpers.js";
+import { readFile, writeFile } from "node:fs/promises";
 
 const restore = async () => {
   try {
     function restoreEntries(data, rootPath) {
-      data.forEach((value) => {
+      data.forEach(async (value) => {
         if (value.type === "file") {
-          fs.writeFileSync(`${rootPath}/${value.path}`, value.content, {
+          await writeFile(`${rootPath}/${value.path}`, value.content, {
             flag: "a+",
           });
         }
         if (value.type === "directory") {
-          fs.mkdirSync(`${rootPath}/${value.path}`);
+          fs.mkdir(`${rootPath}/${value.path}`);
         }
       });
     }
@@ -29,8 +31,10 @@ const restore = async () => {
       fs.mkdirSync(directoryPath);
     }
 
+    await checkDirectory(filePath);
+
     // Get data
-    const rawData = fs.readFileSync(filePath, "utf-8");
+    const rawData = await readFile(filePath, "utf-8");
     const data = JSON.parse(rawData);
 
     restoreEntries(data.entries, directoryPath);

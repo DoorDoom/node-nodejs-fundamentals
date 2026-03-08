@@ -1,38 +1,41 @@
 import process from "process";
 import fs from "fs";
+import { checkDirectory } from "../helpers.js";
+import { readdir, readFile } from "node:fs/promises";
 
 const merge = async () => {
   try {
     const directoryPath = "./workspace";
     const directoryPartsPath = "./workspace/parts";
 
-    function mergeContent(rootPath, files) {
+    async function mergeContent(rootPath, files) {
       let result = "";
       let fileList;
 
       if (files) {
         fileList = files.split(",");
-        fileList.forEach((elem) => {
-          if (!fs.accessSync(`${rootPath}/${elem}`)) {
-            console.log("The file does NOT exist");
-            throw new Error("FS operation failed");
-          }
+        fileList.forEach(async (elem) => {
+          await checkDirectory(`${rootPath}/${elem}`);
         });
-      } else
-        fileList = fs
-          .readdirSync(rootPath, { recursive: true })
+      } else {
+        fileList = await readdir(rootPath, { recursive: true });
+        fileList
           .filter((elem) => {
             const myRe = new RegExp(`.txt$`, "g");
             return elem.search(myRe) > -1;
           })
           .sort();
+      }
 
       if (fileList.length < 1) throw new Error("FS operation failed");
 
-      fileList.forEach((elem) => {
-        const content = fs.readFileSync(`${rootPath}/${elem}`, "utf8");
-        result = result + content;
-      });
+      const contents = await Promise.all(
+        fileList.map((elem) => {
+          return readFile(`${rootPath}/${elem}`, "utf8");
+        }),
+      );
+      contents.forEach((content) => (result = result + content));
+
       return result;
     }
 
@@ -42,23 +45,21 @@ const merge = async () => {
     const files = index !== -1 && args[index + 1] ? args[index + 1] : "";
 
     // Get workspace
-    if (fs.existsSync(directoryPartsPath)) {
-      console.log("The directory exists");
-    } else {
-      console.log("The directory does NOT exist");
-
-      fs.mkdirSync(directoryPartsPath);
-      throw new Error("FS operation failed");
-    }
+    await checkDirectory(directoryPartsPath);
 
     // Get data and create JSON
-    const data = mergeContent(directoryPartsPath, files);
-    const promise = fs.writeFile(`${directoryPath}/merged.txt`, data, (err) => {
-      if (err) {
-        return new Error("FS operation failed");
-      }
-      console.log("File has been written successfully!");
-    });
+    const data12 = await mergeContent(directoryPartsPath, files);
+    console.log(data12);
+    const promise = fs.writeFile(
+      `${directoryPath}/merged.txt`,
+      data12,
+      (err) => {
+        if (err) {
+          return new Error("FS operation failed");
+        }
+        console.log("File has been written successfully!");
+      },
+    );
 
     return promise;
   } catch (err) {

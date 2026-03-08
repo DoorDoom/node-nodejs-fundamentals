@@ -18,7 +18,6 @@ function runWorker(data) {
 
 const main = async () => {
   const cores = cpus().length;
-  const result = [];
   const directoryPath = `${process.cwd()}/workspace/data.json`;
 
   console.log(cores);
@@ -29,7 +28,7 @@ const main = async () => {
       await readFile(directoryPath, { encoding: "utf8" }),
     );
     console.log(typeof data);
-    const chunkQ = Math.floor(data.length / cores);
+    const chunkQ = Math.ceil(data.length / cores);
     const output = new Array(cores);
     let cur = 0;
 
@@ -43,6 +42,8 @@ const main = async () => {
     const merged = results.flat().sort((a, b) => a - b);
 
     console.log(merged);
+
+    process.exit(0);
   } catch (err) {
     console.log(err);
   }

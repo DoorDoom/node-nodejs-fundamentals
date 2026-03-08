@@ -1,40 +1,40 @@
 import fs from "fs";
 import path from "path";
-
-//Expected, that the directory "workspace" will be in the "npde-nodejs-fundamentals" directory
-//Otherwise, it will be created there
+import { checkDirectory } from "../helpers.js";
+import { readdir, readFile, stat } from "node:fs/promises";
 
 const snapshot = async () => {
   try {
-    function getEntries(rootPath) {
+    async function getEntries(rootPath) {
       const result = [];
 
-      fs.readdirSync(rootPath, { recursive: true })
-        .map((elem) => {
-          return { path: elem, stats: fs.statSync(`${rootPath}/${elem}`) };
-        })
-        .forEach(({ path, stats }) => {
-          const type = stats.isFile()
-            ? "file"
-            : stats.isDirectory()
-              ? "directory"
-              : null;
+      const entries = await readdir(rootPath, { recursive: true });
 
-          if (type === "file") {
-            result.push({
-              path,
-              type,
-              size: stats.size,
-              content: fs.readFileSync(`${rootPath}/${path}`, "utf8"),
-            });
-          }
-          if (type === "directory") {
-            result.push({
-              path,
-              type,
-            });
-          }
-        });
+      for (const elem of entries) {
+        const stats = await stat(`${rootPath}/${elem}`);
+
+        const type = stats.isFile()
+          ? "file"
+          : stats.isDirectory()
+            ? "directory"
+            : null;
+
+        if (type === "file") {
+          result.push({
+            path: elem,
+            type,
+            size: stats.size,
+            content: await readFile(`${rootPath}/${elem}`, "utf8"),
+          });
+        }
+
+        if (type === "directory") {
+          result.push({
+            path: elem,
+            type,
+          });
+        }
+      }
 
       return result;
     }
@@ -42,19 +42,11 @@ const snapshot = async () => {
     const directoryPath = "./workspace";
 
     // Get workspace
-    if (fs.existsSync(directoryPath)) {
-      console.log("The directory exists");
-    } else {
-      console.log("The directory does NOT exist");
-
-      fs.mkdirSync(directoryPath);
-      throw new Error("FS operation failed");
-    }
-
+    await checkDirectory(directoryPath);
     // Get data and create JSON
     const data = {
       rootPath: path.resolve(directoryPath),
-      entries: getEntries(directoryPath),
+      entries: await getEntries(directoryPath),
     };
 
     const jsonData = JSON.stringify(data, null, 2);
