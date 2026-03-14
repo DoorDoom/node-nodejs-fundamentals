@@ -23,3 +23,7 @@ export async function checkFile(path) {
     return false;
   }
 }
+
+export function kebabToCamel(str) {
+  return str.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+}
