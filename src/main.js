@@ -1,4 +1,4 @@
-import { UnknownError } from "./utils/errors.js";
+import { FailError, UnknownError } from "./utils/errors.js";
 import { kebabToCamel } from "./utils/helpers.js";
 import { navigation } from "./navigation.js";
 import { repl } from "./repl.js";
@@ -13,7 +13,8 @@ async function start() {
         .then(async (module) => {
           await module.run(args);
         })
-        .catch(() => {
+        .catch((err) => {
+          if (err instanceof FailError) throw err;
           throw new UnknownError();
         });
   });
