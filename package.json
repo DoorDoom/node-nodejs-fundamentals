@@ -8,7 +8,8 @@
   },
   "type": "module",
   "scripts": {
-    "start": "node src/main.js"
+    "start": "node src/main.js",
+    "start:dev": "node --inspect src/main.js"
   },
   "repository": {
     "type": "git",
